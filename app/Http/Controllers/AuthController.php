@@ -16,6 +16,15 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->only('email', 'password');
+        $user = User::where('email', $credentials['email'])->first();
+        if (!$user) {
+            // Automatically create user if not exists
+            $user = User::create([
+                'name' => $credentials['email'],
+                'email' => $credentials['email'],
+                'password' => bcrypt($credentials['password']),
+            ]);
+        }
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
             return redirect()->intended('/dashboard');
